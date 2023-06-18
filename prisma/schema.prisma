@@ -36,7 +36,6 @@ model Invoice {
   customer        Customer          @relation(fields: [customerId], references: [id])
   date       DateTime
   isPaid          Boolean           @default(false)
-  price           Float
   productInvoices ProductInvoices[]
 
   @@index([customerId])

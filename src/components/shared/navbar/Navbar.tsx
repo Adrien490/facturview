@@ -1,3 +1,4 @@
+import { UserButton } from "@clerk/nextjs";
 import React, { type Key } from "react";
 import { NavbarItem } from "./NavbarItem";
 
@@ -5,7 +6,7 @@ export const Navbar = () => {
   const menu = [
     {
       text: "Clients",
-      link_to: "customers",
+      link_to: "/",
     },
     {
       text: "Produits",
@@ -33,6 +34,7 @@ export const Navbar = () => {
                 ></NavbarItem>
               );
             })}
+            <UserButton afterSignOutUrl="/"/>
           </div>
         </div>
       </div>

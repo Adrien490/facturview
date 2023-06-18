@@ -48,7 +48,7 @@ export const InvoiceList = () => {
             >
               <div className="w-1/5 p-2">{invoice.customerName}</div>
               <div className="w-1/5 p-2">{dayjs(invoice.date).format('DD/MM/YYYY')}</div>
-              <div className="w-1/5 p-2">{invoice.isPaid ? <MarkAsUnpaidButton invoiceId={invoice.id}></MarkAsUnpaidButton>: <MarkAsPaidButton invoiceId={invoice.id}></MarkAsPaidButton>}</div>
+              <div className="w-1/5">{invoice.isPaid ? <MarkAsUnpaidButton invoiceId={invoice.id}></MarkAsUnpaidButton>: <MarkAsPaidButton invoiceId={invoice.id}></MarkAsPaidButton>}</div>
               <div className="w-1/5 p-2 flex gap-2 justify-center">
               {invoice.total}
               </div>

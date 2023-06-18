@@ -73,7 +73,6 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
           customerName: values.customerName,
           date: new Date(values.date),
           isPaid: values.isPaid,
-          price: values.price
         });
 
         if (newInvoice) {

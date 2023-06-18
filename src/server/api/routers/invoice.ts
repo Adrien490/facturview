@@ -75,11 +75,10 @@ export const invoiceRouter = createTRPCRouter({
         customerName: z.string().optional(),
         date: z.date().optional(),
         isPaid: z.boolean().optional(),
-        price: z.number().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, customerName, date, isPaid, price } = input;
+      const { id, customerName, date, isPaid } = input;
       try {
         const {id: customerId} = await ctx.prisma.customer.findFirst({
           where: { lastName: customerName },
@@ -90,7 +89,6 @@ export const invoiceRouter = createTRPCRouter({
             customerId,
             date,
             isPaid,
-            price,
           },
         });
         if (!updatedInvoice) {
@@ -107,11 +105,10 @@ export const invoiceRouter = createTRPCRouter({
         customerName: z.string(),
         date: z.date(),
         isPaid: z.boolean(),
-        price: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { customerName, date, isPaid, price } = input;
+      const { customerName, date, isPaid } = input;
       try {
         const {id: customerId} = await ctx.prisma.customer.findFirst({
           where: { lastName: customerName },
@@ -122,7 +119,6 @@ export const invoiceRouter = createTRPCRouter({
             customerId,
             date,
             isPaid,
-            price,
           },
         });
         return { status: 201, message: "Invoice created successfully.", data: newInvoice };

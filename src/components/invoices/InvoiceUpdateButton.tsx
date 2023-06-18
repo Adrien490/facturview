@@ -12,6 +12,7 @@ interface InvoiceUpdateButtonProps {
 export const InvoiceUpdateButton = ({ id }: InvoiceUpdateButtonProps) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const invoice = api.invoices.getById.useQuery({ id });
+  console.log(invoice.data)
 
   return (
     <>
@@ -22,7 +23,7 @@ export const InvoiceUpdateButton = ({ id }: InvoiceUpdateButtonProps) => {
         <HiPencil size={20}></HiPencil>
       </button>
       <Modal
-        width={"40%"}
+        width={"60%"}
         className={"flex flex-col gap-8"}
         modalIsOpen={modalIsOpen}
         onClose={() => setModalIsOpen(false)}

@@ -8,6 +8,7 @@ import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
 import 'react-toastify/dist/ReactToastify.css';
+import { ClerkProvider, SignIn, useUser } from "@clerk/nextjs";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -15,8 +16,13 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
+    <ClerkProvider>
+    
       <Component {...pageProps} />
+      
       <ToastContainer />
+    
+    </ClerkProvider>
     </SessionProvider>
   );
 };

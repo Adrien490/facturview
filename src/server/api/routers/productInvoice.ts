@@ -21,6 +21,34 @@ export const productInvoiceRouter = createTRPCRouter({
   
         return productInvoice;
       }),
+      deleteAll: publicProcedure.mutation(async ({ ctx }) => {
+        const deletedProductInvoices = await ctx.prisma.productInvoices.deleteMany();
+        return deletedProductInvoices;
+      }), 
+      getAllByInvoiceId: publicProcedure
+.input(
+  z.object({
+    invoiceId: z.number(),
+  })
+)
+.query(async ({ ctx, input }) => {
+  const { invoiceId } = input;
+  const productInvoices = await ctx.prisma.productInvoices.findMany({
+    where: { invoiceId },
+    include: {
+      product: true, // Include related product data
+    },
+  });
+
+  // Map over productInvoices to add productName to each invoice object
+  return productInvoices.map(productInvoice => {
+    return {
+      ...productInvoice,
+      productName: productInvoice.product.name,
+    };
+  });
+}),
+    
     deleteById: publicProcedure
       .input(
         z.object({
