@@ -6,6 +6,20 @@ export const customerRouter = createTRPCRouter({
     const customers = await ctx.prisma.customer.findMany();
     return customers;
   }),
+  getByName: publicProcedure
+    .input(
+      z.object({
+        firstName: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { firstName } = input;
+      const customer = await ctx.prisma.customer.findFirst({
+        where: { firstName },
+      });
+
+      return customer;
+    }),
   getById: publicProcedure
     .input(
       z.object({

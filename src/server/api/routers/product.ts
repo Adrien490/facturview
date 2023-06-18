@@ -39,18 +39,16 @@ export const productRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         stock: z.number(),
-        photo: z.string(),
         price: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { name, stock, photo, price } = input;
+      const { name, stock, price } = input;
       try {
         const newProduct = await ctx.prisma.product.create({
           data: {
             name,
             stock,
-            photo,
             price,
           },
         });
@@ -65,19 +63,17 @@ export const productRouter = createTRPCRouter({
         id: z.number(),
         name: z.string().optional(),
         stock: z.number().optional(),
-        photo: z.string().optional(),
         price: z.number().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, name, stock, photo, price } = input;
+      const { id, name, stock, price } = input;
       try {
         const updatedProduct = await ctx.prisma.product.update({
           where: { id },
           data: {
             name,
             stock,
-            photo,
             price,
           },
         });

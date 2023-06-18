@@ -13,7 +13,7 @@ export const InvoiceCreateButton = () => {
         Ajouter une facture
       </button>
       <Modal
-        width={"57%"}
+        width={"65%"}
         className={"flex flex-col gap-8"}
         modalIsOpen={modalIsOpen}
         onClose={() => setModalIsOpen(false)}

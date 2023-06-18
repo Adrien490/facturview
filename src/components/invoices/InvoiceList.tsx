@@ -1,8 +1,12 @@
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { type Key } from "react";
+import React, { useEffect, useState, type Key } from "react";
 import { listVariants } from "~/hooks/useAnimation";
 import { api } from "~/utils/api";
+import { InvoiceDeleteButton } from "./InvoiceDeleteButton";
+import { InvoiceUpdateButton } from "./InvoiceUpdateButton";
+import MarkAsPaidButton from "./MarkAsPaidButton";
+import MarkAsUnpaidButton from "./MarkAsUnPaidButton";
 
 
 export const InvoiceList = () => {
@@ -13,7 +17,7 @@ export const InvoiceList = () => {
   } = api.invoices.getAll.useQuery();
   const { mutateAsync, isLoading: isDeleting } =
     api.invoices.deleteById.useMutation();
-  
+
 
   const handleDelete = (id: number) => {
     const deleteItem = async (id: number) => {
@@ -44,12 +48,13 @@ export const InvoiceList = () => {
             >
               <div className="w-1/5 p-2">{invoice.customerName}</div>
               <div className="w-1/5 p-2">{dayjs(invoice.date).format('DD/MM/YYYY')}</div>
-              <div className="w-1/5 p-2">{invoice.isPaid}</div>
-              <div className="w-1/5 p-2 flex gap-2 justify-end">
-              
+              <div className="w-1/5 p-2">{invoice.isPaid ? <MarkAsUnpaidButton invoiceId={invoice.id}></MarkAsUnpaidButton>: <MarkAsPaidButton invoiceId={invoice.id}></MarkAsPaidButton>}</div>
+              <div className="w-1/5 p-2 flex gap-2 justify-center">
+              {invoice.total}
               </div>
               <div className="w-1/5 justify-end p-2 flex gap-2 justify-end">
-              
+                <InvoiceUpdateButton id={invoice.id}></InvoiceUpdateButton>
+              <InvoiceDeleteButton handleDelete={handleDelete} id={invoice.id}></InvoiceDeleteButton>
               </div>
             </motion.div>
           ))}

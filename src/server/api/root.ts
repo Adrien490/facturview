@@ -1,3 +1,4 @@
+import { productInvoiceRouter } from './routers/productInvoice';
 import { createTRPCRouter } from "~/server/api/trpc";
 import { customerRouter } from "./routers/customer";
 import { invoiceRouter } from "./routers/invoice";
@@ -11,7 +12,8 @@ import { productRouter } from "./routers/product";
 export const appRouter = createTRPCRouter({
   customers: customerRouter,
   products: productRouter,
-  invoices: invoiceRouter
+  invoices: invoiceRouter,
+  productInvoice: productInvoiceRouter
 });
 
 // export type definition of API

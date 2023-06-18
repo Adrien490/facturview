@@ -1,29 +1,36 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { api } from "~/utils/api";
 import { toast } from "react-toastify";
 import { HiPlus } from "react-icons/hi2";
 import Select from "react-select";
+
 interface InvoiceCreateFormProps {
   onClose: () => void;
 }
 
 export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
+  const {
+    refetch,
+  } = api.invoices.getAll.useQuery();
   const { mutateAsync } = api.invoices.create.useMutation();
+  const { mutateAsync: productInvoiceMutateAsync } = api.productInvoice.create.useMutation();
   const { data: products } = api.products.getAll.useQuery();
   const { data: customers } = api.customers.getAll.useQuery();
 
-  const removeProduct = async (indexToRemove: number) => {
-    await formik.setValues((currentValues) => {
-      const filteredProducts = currentValues.products.filter((_, index) => index !== indexToRemove);
-      return {
-        ...currentValues,
-        products: filteredProducts,
-      };
-    });
-    toast.success("Ligne de produit supprimée avec succès");
-  };
-  
+  const removeProduct = (indexToRemove: number) => {
+    const remove = async () => {
+      await formik.setValues((currentValues) => {
+        const filteredProducts = currentValues.products.filter((_, index) => index !== indexToRemove);
+        return {
+          ...currentValues,
+          products: filteredProducts,
+        };
+      });
+      toast.success("Ligne de produit supprimée avec succès");
+    };
+    void remove();
+  }
 
   const customerOptions = customers?.map((customer) => ({
     value: customer.id, // Remplacez 'id' par la clé appropriée pour le client
@@ -35,36 +42,67 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
     label: product.name, // Remplacez 'name' par la clé appropriée pour le client
   }));
 
-  const addProduct = async () => {
-    const newProduct = { productName: "", quantity: 1 };
-    await formik.setValues({
-      ...formik.values,
-      products: [...formik.values.products, newProduct],
-    });
-    toast.success("Ligne ajoutée avec succès");
-  };
+  const addProduct = () => {
+    const add = async () => {
+      const newProduct = { productName: "", quantity: 1 };
+      await formik.setValues({
+        ...formik.values,
+        products: [...formik.values.products, newProduct],
+      });
+      toast.success("Ligne ajoutée avec succès");
+    };
+    void add();
+  }
+
+
 
   const formik = useFormik({
     initialValues: {
       customerName: "",
-      date: "",
+      date: new Date().toISOString(),
       isPaid: false,
       price: 0,
       products: [{ productName: "", quantity: 1 }],
     },
     onSubmit: async (values) => {
-      console.log(values);
-
       try {
-        await mutateAsync(values);
-        await refetch();
-        toast.success("Facture ajoutée avec succès !");
-        onClose();
+
+
+        // Créer la facture d'abord
+        const newInvoice = await mutateAsync({
+          customerName: values.customerName,
+          date: new Date(values.date),
+          isPaid: values.isPaid,
+          price: values.price
+        });
+
+        if (newInvoice) {
+          const invoiceId = newInvoice.data && newInvoice.data.id || 0; 
+          for (const product of values.products) {            
+            try {
+              const productToSave = {
+                invoiceId,
+                quantity: product.quantity,
+                productName: product.productName,
+              };
+              await productInvoiceMutateAsync(productToSave);
+            } catch (error) {
+              console.error('Failed to save product', error);
+            }
+          }
+
+
+          await refetch();
+          toast.success("Facture ajoutée avec succès !");
+          onClose();
+        }
+        
       } catch (error) {
         // Handle error
       }
     },
   });
+
 
   return (
     <form onSubmit={formik.handleSubmit} className="text-center">
@@ -115,7 +153,7 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
                     id={`products[${index}].productName`}
                     name={`products[${index}].productName`}
                     options={productOptions}
-                    className="w-full w-48 rounded-lg border-2 border-gray-300 p-2 focus:border-indigo-500"
+                    className="w-full w-80 rounded-lg border-2 border-gray-300 p-2 focus:border-indigo-500"
                     // eslint-disable-next-line @typescript-eslint/no-misused-promises
                     onChange={(option) =>
                       formik.setFieldValue(`products[${index}].productName`, option?.label)
@@ -135,21 +173,21 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
                   />
                 </div>
                 <div>
-      <button
-        type="button"
-        onClick={() => removeProduct(index)}
-        className="rounded-lg bg-red-500 px-2 py-1 font-semibold text-white"
-      >
-        Supprimer
-      </button>
-    </div>
+                  <button
+                    type="button"
+                    onClick={() => removeProduct(index)}
+                    className="rounded-lg bg-red-500 px-2 py-1 font-semibold text-white"
+                  >
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
           </div>
           <button
             type="button"
             onClick={addProduct}
-            className="absolute bottom-0 right-1 mb-4 flex w-14 w-full items-center justify-center rounded-lg bg-primary px-4 py-2 font-semibold text-white"
+            className="absolute bottom-0 right-1 mb-4 flex w-24 w-full items-center justify-center rounded-lg bg-primary px-4 py-2 font-semibold text-white"
           >
             <HiPlus></HiPlus>
           </button>

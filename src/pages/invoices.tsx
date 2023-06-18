@@ -16,7 +16,7 @@ export default function Invoices(){
               <div className="w-1/5 p-2">Client</div>
               <div className="w-1/5 p-2">Date</div>
               <div className="w-1/5 p-2">Payée</div>
-              <div className="w-1/5 p-2">Total</div>
+              <div className="w-1/5 p-2">Total (€)</div>
               <div className="w-1/5 p-2"></div>
             </div>
             <InvoiceList></InvoiceList>
