@@ -34,7 +34,7 @@ export const Navbar = () => {
                 ></NavbarItem>
               );
             })}
-            <UserButton afterSignOutUrl="/"/>
+            <UserButton afterSignOutUrl="/sign-in"/>
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { type Product } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
@@ -45,7 +46,7 @@ export const productRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { name, stock, price } = input;
       try {
-        const newProduct = await ctx.prisma.product.create({
+        const newProduct: Product = await ctx.prisma.product.create({
           data: {
             name,
             stock,
@@ -55,6 +56,56 @@ export const productRouter = createTRPCRouter({
         return { status: 201, message: "Product created successfully.", data: newProduct };
       } catch (error) {
         return { status: 400, message: "Failed to create product." };
+      }
+    }),
+    incrementStock: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        incrementValue: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, incrementValue } = input;
+      try {
+        const updatedProduct = await ctx.prisma.product.update({
+          where: { id },
+          data: {
+            stock: incrementValue,
+          },
+        });
+        if (!updatedProduct) {
+          return { status: 404, message: "Product not found." };
+        }
+        return { status: 200, message: "Product stock incremented successfully.", data: updatedProduct };
+      } catch (error) {
+        return { status: 400, message: "Failed to increment product stock." };
+      }
+    }),
+
+  decrementStock: publicProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        decrementValue: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { name, decrementValue } = input;
+      try {
+        const productBeforeUpdate = await ctx.prisma.product.findFirst({ where: { name }});
+        if (!productBeforeUpdate) {
+          return { status: 404, message: "Product not found." };
+        }
+        const updatedProduct = await ctx.prisma.product.update({
+          where: { id: productBeforeUpdate.id },
+          data: {
+            stock: productBeforeUpdate.stock - decrementValue,
+          },
+        });
+        return { status: 200, message: "Product stock decremented successfully.", data: updatedProduct };
+      } catch (error) {
+        return { status: 400, message: "Failed to decrement product stock." };
       }
     }),
   update: publicProcedure

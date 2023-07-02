@@ -10,18 +10,21 @@ interface InvoiceCreateFormProps {
 }
 
 export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
-  const {
-    refetch,
-  } = api.invoices.getAll.useQuery();
+  const { refetch } = api.invoices.getAll.useQuery();
   const { mutateAsync } = api.invoices.create.useMutation();
-  const { mutateAsync: productInvoiceMutateAsync } = api.productInvoice.create.useMutation();
+  const { mutateAsync: productInvoiceMutateAsync } =
+    api.productInvoice.create.useMutation();
   const { data: products } = api.products.getAll.useQuery();
+  const { mutateAsync: decrementStockMutateAsync } =
+    api.products.decrementStock.useMutation();
   const { data: customers } = api.customers.getAll.useQuery();
 
   const removeProduct = (indexToRemove: number) => {
     const remove = async () => {
       await formik.setValues((currentValues) => {
-        const filteredProducts = currentValues.products.filter((_, index) => index !== indexToRemove);
+        const filteredProducts = currentValues.products.filter(
+          (_, index) => index !== indexToRemove
+        );
         return {
           ...currentValues,
           products: filteredProducts,
@@ -30,7 +33,7 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
       toast.success("Ligne de produit supprimée avec succès");
     };
     void remove();
-  }
+  };
 
   const customerOptions = customers?.map((customer) => ({
     value: customer.id, // Remplacez 'id' par la clé appropriée pour le client
@@ -52,9 +55,7 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
       toast.success("Ligne ajoutée avec succès");
     };
     void add();
-  }
-
-
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -66,8 +67,6 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
     },
     onSubmit: async (values) => {
       try {
-
-
         // Créer la facture d'abord
         const newInvoice = await mutateAsync({
           customerName: values.customerName,
@@ -76,8 +75,14 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
         });
 
         if (newInvoice) {
-          const invoiceId = newInvoice.data && newInvoice.data.id || 0; 
-          for (const product of values.products) {            
+          const invoiceId = (newInvoice.data && newInvoice.data.id) || 0;
+          for (const product of values.products) {
+            // Décrémenter le stock du produit
+            await decrementStockMutateAsync({
+              name: product.productName,
+              decrementValue: product.quantity,
+            });
+
             try {
               const productToSave = {
                 invoiceId,
@@ -86,22 +91,19 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
               };
               await productInvoiceMutateAsync(productToSave);
             } catch (error) {
-              console.error('Failed to save product', error);
+              console.error("Failed to save product", error);
             }
+
+            await refetch();
+            toast.success("Facture ajoutée avec succès !");
+            onClose();
           }
-
-
-          await refetch();
-          toast.success("Facture ajoutée avec succès !");
-          onClose();
         }
-        
       } catch (error) {
         // Handle error
       }
     },
   });
-
 
   return (
     <form onSubmit={formik.handleSubmit} className="text-center">
@@ -120,9 +122,8 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
               options={customerOptions}
               className="w-full rounded-lg border-2 border-gray-300 p-2 focus:border-indigo-500"
               // eslint-disable-next-line @typescript-eslint/no-misused-promises
-              onChange={(option) =>
-                formik.setFieldValue("customerName", option?.label)
-              }
+              onChange={(option) => option && formik.setFieldValue("customerName", option.label)}
+
               isSearchable
             />
           </div>
@@ -152,11 +153,10 @@ export const InvoiceCreateForm = ({ onClose }: InvoiceCreateFormProps) => {
                     id={`products[${index}].productName`}
                     name={`products[${index}].productName`}
                     options={productOptions}
-                    className="w-full w-80 rounded-lg border-2 border-gray-300 p-2 focus:border-indigo-500"
+                    className="w-80 w-full rounded-lg border-2 border-gray-300 p-2 focus:border-indigo-500"
                     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                    onChange={(option) =>
-                      formik.setFieldValue(`products[${index}].productName`, option?.label)
-                    }
+                    onChange={(option) => option && formik.setFieldValue(`products[${index}].productName`, option.label)}
+
                     isSearchable
                   />
                 </div>
